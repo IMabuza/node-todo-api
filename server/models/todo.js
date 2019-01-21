@@ -17,4 +17,6 @@ var Todo = mongoose.model('Todo', {
     }
 });
 
+
+// Export todo
 module.exports = {Todo};
