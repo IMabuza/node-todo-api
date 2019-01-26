@@ -5,10 +5,20 @@ const request = require('supertest');
 const {app} = require('./../server');
 const {Todo} = require('./../models/todo');
 
+// Create Dummy todos (Seed data)
+
+const todos = [{
+    text: "First todo text"
+},{
+    text: "Second todo text"
+}];
+
 
 // wipe out the database before each call
 beforeEach((done) =>{
-    Todo.remove({}).then(() => done());
+    Todo.remove({}).then(() => {
+        return Todo.insertMany(todos);
+    }).then(() => done());
 });
 // Start Testing
 
@@ -31,9 +41,9 @@ describe('POST /todos', () => {
                 return done(err);
             }
 
-            // Check if the todo was store
+            // Check if the todo was stored
 
-            Todo.find().then((todos) => {
+            Todo.find({text}).then((todos) => {
                 expect(todos.length).toBe(1);
                 expect(todos[0].text).toBe(text);
                 done();
@@ -55,13 +65,25 @@ describe('POST /todos', () => {
                return done(err);
            }
 
-           // Check if the todo was store
+           // Check if the todo was stored
 
            Todo.find().then((todos) => {
-               expect(todos.length).toBe(0);
+               expect(todos.length).toBe(2);
                done();
            }).catch((e) => done(e));
         });
     });
+});
 
+// Check if it returns all the todos
+describe('GET /todos', () => {
+    it('should get all todos', (done) => {
+        request(app)
+        .get('/todos')
+        .expect(200)
+        .expect((res) => {
+            expect(res.body.todos.length).toBe(2);
+        })
+        .end(done);
+    });
 });
